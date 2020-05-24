@@ -1,13 +1,14 @@
 package main
 
 import (
-	"time"
-
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
 	"github.com/VaguelySerious/scontrino-api/models"
 	"github.com/VaguelySerious/scontrino-api/controllers"
+)
+
+const (
+	corssites = "https://wielander.me,http://localhost:8080,https://scontrino.wielander.me"
 )
 
 func main() {
@@ -15,6 +16,8 @@ func main() {
 
 	// Connect to database
 	models.ConnectDatabase()
+
+	r.Use(CORSMiddleware())
 
 	// Routes
 	r.GET("/api/v1/expenses", controllers.ListExpenses)
@@ -24,15 +27,23 @@ func main() {
 	// r.PATCH("/expenses/:id", controllers.UpdateExpense)
 	r.DELETE("/api/v1/expenses/:id", controllers.RemoveExpense)
 
-	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"https://wielander.me","http://localhost:8080","https://scontrino.wielander.me"},
-		AllowMethods:     []string{"GET","OPTION","POST","PUT","PATCH","DELETE"},
-		// AllowHeaders:     []string{"Origin"},
-		// ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge: 12 * time.Hour,
-	}))
 
 	// Run the server
 	r.Run()
+}
+
+func CORSMiddleware() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        c.Writer.Header().Set("Access-Control-Allow-Origin", corssites)
+        c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+        c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, Authorization, accept, origin, Cache-Control, X-Requested-With")
+        c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE, PATCH")
+
+        if c.Request.Method == "OPTIONS" {
+            c.AbortWithStatus(204)
+            return
+        }
+
+        c.Next()
+    }
 }
