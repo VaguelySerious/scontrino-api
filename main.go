@@ -1,8 +1,8 @@
 package main
 
 import (
-	"scontrino-api/controllers"
-	"scontrino-api/models"
+	"github.com/VaguelySerious/scontrino-api/models"
+	"github.com/VaguelySerious/scontrino-api/controllers"
 
 	"github.com/gin-gonic/gin"
 )

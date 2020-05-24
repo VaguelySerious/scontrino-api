@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gopkg.in/validator.v2"
 
-	"scontrino-api/models"
+	"github.com/VaguelySerious/scontrino-api/models"
 )
 
 const user = "peter"
