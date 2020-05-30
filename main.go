@@ -21,10 +21,11 @@ func main() {
 
 	// Routes
 	r.GET("/api/v1/expenses", controllers.ListExpenses)
-	// r.GET("/expenses/:id", controllers.ShowExpense)
+	r.GET("/api/v1/expenses/:id", controllers.ShowExpense)
 	r.POST("/api/v1/expenses", controllers.CreateExpense)
-	// r.PUT("/expenses/:id", controllers.UpdateExpense)
-	// r.PATCH("/expenses/:id", controllers.UpdateExpense)
+	// TODO Make PUT overwrite instead of doing the same as PATCH
+	r.PUT("/api/v1/expenses/:id", controllers.UpdateExpense)
+	r.PATCH("/api/v1/expenses/:id", controllers.UpdateExpense)
 	r.DELETE("/api/v1/expenses/:id", controllers.RemoveExpense)
 
 

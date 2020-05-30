@@ -12,6 +12,20 @@ import (
 
 const user = "peter"
 
+
+func ShowExpense(c *gin.Context) {
+	var expense models.Expense
+	if c.Param("id") == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing ID param"})
+		return
+	}
+	if err := models.DB.Where("id = ?", c.Param("id")).First(&expense).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Item not found"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"data": expense})
+}
+
 func ListExpenses(c *gin.Context) {
 
 	query := models.DB.Order("date DESC")
@@ -89,25 +103,70 @@ func CreateExpense(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": expense})
 }
 
-// func UpdateExpense(c *gin.Context) {
-// 	// Get model if exist
-// 	var expense models.Expense
-// 	if err := models.DB.Where("id = ?", c.Param("id")).First(&expense).Error; err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found!"})
-// 		return
-// 	}
+func UpdateExpense(c *gin.Context) {
+	// TODO Also check if int
+	if c.Param("id") == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing ID param"})
+		return
+	}
 
-// 	// Validate input
-// 	var input models.UpdateExpenseInput
-// 	if err := c.ShouldBindJSON(&input); err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-// 		return
-// 	}
+	// Get model if exist
+	var expense models.Expense
+	if err := models.DB.Where("id = ?", c.Param("id")).First(&expense).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Item not found"})
+		return
+	}
 
-// 	models.DB.Model(&expense).Updates(input)
+	// Validate input
+	var input models.UpdateExpenseInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-// 	c.JSON(http.StatusOK, gin.H{"data": expense})
-// }
+	partialExpense := models.Expense{
+		Name: expense.Name,
+		Category: expense.Category,
+		Cost: expense.Cost,
+		Sharing: expense.Sharing,
+		Date: expense.Date,
+		Notes: expense.Notes,
+	}
+	if input.Name != "" {
+		partialExpense.Name = input.Name
+	}
+	if input.Category != "" {
+		partialExpense.Category = input.Category
+	}
+	if input.Cost != 0.0 {
+		partialExpense.Cost = input.Cost
+	}
+	if input.Sharing != 0.0 {
+		partialExpense.Sharing = input.Sharing
+	}
+	if input.Date != "" {
+		partialExpense.Date = input.Date
+	}
+	if input.Notes != "" {
+		partialExpense.Notes = input.Notes
+	}
+	// if input.GroupID {
+	// 	partialExpense.GroupID = input.GroupID
+	// }
+
+	if errs := validator.Validate(partialExpense); errs != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": errs})
+		return
+	}
+
+	// if input.GroupID == 0 {
+	// 	partialExpense.Sharing = 0.0
+	// }
+
+	models.DB.Model(&expense).Updates(partialExpense)
+
+	c.JSON(http.StatusOK, gin.H{"data": expense})
+}
 
 func RemoveExpense(c *gin.Context) {
 	// Get model if exist
@@ -121,13 +180,3 @@ func RemoveExpense(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"data": true})
 }
-
-// func ShowExpense(c *gin.Context) {
-// 	// Get model if exist
-// 	var expense models.Expense
-// 	if err := models.DB.Where("id = ?", c.Param("id")).First(&expense).Error; err != nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found!"})
-// 		return
-// 	}
-// 	c.JSON(http.StatusOK, gin.H{"data": expense})
-// }

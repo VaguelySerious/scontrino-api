@@ -1,4 +1,4 @@
-./scontrino-api
+/scontrino-api
 tmp
 
 *.db
